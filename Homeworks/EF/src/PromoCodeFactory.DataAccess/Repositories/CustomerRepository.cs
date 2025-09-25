@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using PromoCodeFactory.Core.Abstractions.Repositories;
@@ -12,5 +13,11 @@ public class CustomerRepository : EntityFrameworkRepository<Customer>, ICustomer
 	public async Task<Customer> GetCustomerWithPreferenceByIdAsync(Guid id)
 	{
 		return await _context.Set<Customer>().Include(x => x.CustomerPreferences).ThenInclude(x => x.Preference).Include(x => x.PromoCodes).FirstOrDefaultAsync(x => x.Id == id);
+	}
+
+	public async Task<List<Customer>> GetAllCustomersWithPreferencesAsync()
+	{
+		return await _context.Set<Customer>().Include(x => x.CustomerPreferences)
+		.ThenInclude(x => x.Preference).Include(x => x.PromoCodes).ToListAsync();
 	}
 }

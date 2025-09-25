@@ -37,13 +37,7 @@ namespace PromoCodeFactory.WebHost.Controllers
             {
                 var customers = await _customerRepository.GetAllAsync();
                 var customersModelList = customers.Select(x =>
-                    new CustomerShortResponse()
-                    {
-                        Id = x.Id,
-                        FirstName = x.FirstName,
-                        LastName = x.LastName,
-                        Email = x.Email
-                    }).ToList();
+                x.ToCustomerShortResponse()).ToList();
                 return Ok(customersModelList);
             }
             catch
