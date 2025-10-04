@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PromoCodeFactory.Core.Abstractions.Repositories;
@@ -7,6 +8,7 @@ using PromoCodeFactory.Core.Domain.Administration;
 using PromoCodeFactory.Core.Domain.PromoCodeManagement;
 using PromoCodeFactory.DataAccess.Data;
 using PromoCodeFactory.DataAccess.Repositories;
+using PromoCodeFactory.DataAccess;
 
 namespace PromoCodeFactory.WebHost
 {
@@ -17,14 +19,25 @@ namespace PromoCodeFactory.WebHost
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddScoped(typeof(IRepository<Employee>), (x) =>
-                new InMemoryRepository<Employee>(FakeDataFactory.Employees));
-            services.AddScoped(typeof(IRepository<Role>), (x) =>
-                new InMemoryRepository<Role>(FakeDataFactory.Roles));
-            services.AddScoped(typeof(IRepository<Preference>), (x) =>
-                new InMemoryRepository<Preference>(FakeDataFactory.Preferences));
-            services.AddScoped(typeof(IRepository<Customer>), (x) =>
-                new InMemoryRepository<Customer>(FakeDataFactory.Customers));
+            // services.AddScoped(typeof(IRepository<Employee>), (x) =>
+            //     new InMemoryRepository<Employee>(FakeDataFactory.Employees));
+            // services.AddScoped(typeof(IRepository<Role>), (x) =>
+            //     new InMemoryRepository<Role>(FakeDataFactory.Roles));
+            // services.AddScoped(typeof(IRepository<Preference>), (x) =>
+            //     new InMemoryRepository<Preference>(FakeDataFactory.Preferences));
+            // services.AddScoped(typeof(IRepository<Customer>), (x) =>
+            //     new InMemoryRepository<Customer>(FakeDataFactory.Customers));
+            services.AddDbContext<ApplicationDbContext>(options =>
+            {
+                options.UseSqlite("Data Source=promocodefactory.db");
+            });
+
+
+            services.AddScoped(typeof(IRepository<Preference>), typeof(EntityFrameworkRepository<Preference>));
+            services.AddScoped(typeof(IRepository<PromoCode>), typeof(EntityFrameworkRepository<PromoCode>));
+            services.AddScoped(typeof(IRepository<Role>), typeof(EntityFrameworkRepository<Role>));
+            services.AddScoped(typeof(IRepository<Employee>), typeof(EntityFrameworkRepository<Employee>));
+            services.AddScoped(typeof(ICustomerRepository), typeof(CustomerRepository));
 
             services.AddOpenApiDocument(options =>
             {
