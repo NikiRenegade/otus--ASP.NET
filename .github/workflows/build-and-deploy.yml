@@ -51,4 +51,4 @@ jobs:
         run: docker build -t promofactory-webhost -f ./Homeworks/EF/src/PromoCodeFactory.WebHost/Dockerfile .
 
       - name: Запустить контейнеры через Docker Compose (опционально)
-        run: docker compose -f Homeworks/EF/src/PromoCodeFactory.WebHost/docker-compose.yml up -d
+        run: docker compose -f Homeworks/EF/src/compose.yml up -d
