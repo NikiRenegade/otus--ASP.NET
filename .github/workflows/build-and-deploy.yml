@@ -34,21 +34,21 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Восстановить зависимости
-        run: dotnet restore ./PromoCodeFactory.WebHost/PromoCodeFactory.WebHost.csproj
+        run: dotnet restore ./Homeworks/EF/src/PromoCodeFactory.WebHost/PromoCodeFactory.WebHost.csproj
 
       - name: Собрать проект
-        run: dotnet build ./PromoCodeFactory.WebHost/PromoCodeFactory.WebHost.csproj -c Release --no-restore
+        run: dotnet build ./Homeworks/EF/src/PromoCodeFactory.WebHost/PromoCodeFactory.WebHost.csproj -c Release --no-restore
 
       - name: Применить миграции
         run: |
           dotnet tool install --global dotnet-ef
           export PATH="$PATH:/home/runner/.dotnet/tools"
-          dotnet ef database update --project PromoCodeFactory.WebHost --context ApplicationDbContext
+          dotnet ef database update --project Homeworks/EF/src/PromoCodeFactory.WebHost --context ApplicationDbContext
         env:
           ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=HomeworkDockerDb;Username=postgres;Password=P@$$w0rd"
 
       - name: Собрать Docker-образ
-        run: docker build -t promofactory-webhost -f ./PromoCodeFactory.WebHost/Dockerfile .
+        run: docker build -t promofactory-webhost -f ./Homeworks/EF/src/PromoCodeFactory.WebHost/Dockerfile .
 
       - name: Запустить контейнеры через Docker Compose (опционально)
         run: docker compose up -d
