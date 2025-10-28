@@ -35,8 +35,8 @@
 
   webhost:
     build:
-      context: ./Homeworks/EF/src
-      dockerfile: ./Homeworks/EF/src/PromoCodeFactory.WebHost/Dockerfile
+      context: .
+      dockerfile: PromoCodeFactory.WebHost/Dockerfile
     depends_on:
       migrate:
         condition: service_completed_successfully
