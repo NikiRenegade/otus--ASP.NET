@@ -11,7 +11,7 @@ COPY ["Homeworks/EF/src/PromoCodeFactory.WebHost/PromoCodeFactory.WebHost.csproj
 COPY ["Homeworks/EF/src/PromoCodeFactory.Core/PromoCodeFactory.Core.csproj", "PromoCodeFactory.Core/"]
 COPY ["Homeworks/EF/src/PromoCodeFactory.DataAccess/PromoCodeFactory.DataAccess.csproj", "PromoCodeFactory.DataAccess/"]
 RUN dotnet restore "PromoCodeFactory.WebHost/PromoCodeFactory.WebHost.csproj"
-COPY . .
+COPY Homeworks/EF/src/ .
 WORKDIR "/src/PromoCodeFactory.WebHost"
 RUN dotnet build "PromoCodeFactory.WebHost.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
