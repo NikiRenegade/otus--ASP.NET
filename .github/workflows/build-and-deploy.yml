@@ -53,5 +53,6 @@ jobs:
       - name: Проверить содержимое
         run: ls -R Homeworks/EF/src
 
-      - name: Запустить контейнеры через Docker Compose (опционально)
-        run: docker compose -f Homeworks/EF/src/compose.yml up -d
+      - name: Запустить контейнеры через Docker Compose
+        working-directory: Homeworks/EF/src
+        run: docker compose -f compose.yml up -d
