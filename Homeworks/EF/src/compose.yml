@@ -35,7 +35,7 @@
 
   webhost:
     build:
-      context: ./Homeworks/EF/src
+      context: .
       dockerfile: ./PromoCodeFactory.WebHost/Dockerfile
     depends_on:
       migrate:
