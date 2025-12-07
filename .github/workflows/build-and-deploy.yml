@@ -50,7 +50,7 @@ jobs:
           ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=HomeworkDockerDb;Username=postgres;Password=P@$$w0rd"
 
       - name: Собрать Docker-образ
-        run: docker build -t promofactory-webhost -f ./Homeworks/EF/src/PromoCodeFactory.WebHost/Dockerfile .
+        run: docker build -t promofactory-webhost -f ./Homeworks/EF/src/PromoCodeFactory.WebHost/Dockerfile ./Homeworks/EF/src
 
       - name: Запустить контейнеры через Docker Compose (опционально)
         run: docker compose -f Homeworks/EF/src/compose.yml up -d
