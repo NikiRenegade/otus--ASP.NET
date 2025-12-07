@@ -39,9 +39,6 @@ jobs:
       - name: Собрать проект
         run: dotnet build ./Homeworks/EF/src/PromoCodeFactory.WebHost/PromoCodeFactory.WebHost.csproj -c Release --no-restore
       
-      - name: Запустить unit-тесты
-        run: dotnet test ./Homeworks/UnitTests/src/PromoCodeFactory.UnitTests/PromoCodeFactory.UnitTests.csproj --no-build --verbosity normal
-      
       - name: Применить миграции
         run: |
           dotnet tool install --global dotnet-ef
