@@ -1,0 +1,51 @@
+﻿services:
+  postgres:
+    image: postgres:16
+    container_name: homework_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: P@$$w0rd
+      POSTGRES_DB: HomeworkDockerDb
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  migrate:
+    image: mcr.microsoft.com/dotnet/sdk:8.0
+    container_name: migrate_homework
+    depends_on:
+      postgres:
+        condition: service_healthy
+    working_dir: /src/PromoCodeFactory.WebHost
+    volumes:
+      - .:/src
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=HomeworkDockerDb;Username=postgres;Password=P@$$w0rd"
+    command: >
+      sh -c "dotnet tool install --global dotnet-ef &&
+             export PATH=\"$PATH:/root/.dotnet/tools\" &&
+             dotnet restore &&
+             dotnet ef database update --context ApplicationDbContext"
+
+  webhost:
+    build:
+      context: ./Homeworks/EF/src
+      dockerfile: ./PromoCodeFactory.WebHost/Dockerfile
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=HomeworkDockerDb;Username=postgres;Password=P@$$w0rd"
+    ports:
+      - "5060:80"
+    container_name: src-webhost
+    command: "dotnet PromoCodeFactory.WebHost.dll"
+
+volumes:
+  postgres_data:

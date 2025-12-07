@@ -1,0 +1,57 @@
+name: Сборка и деплой
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+      = main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: P@$$w0rd
+          POSTGRES_DB: HomeworkDockerDb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Клонировать репозиторий
+        uses: actions/checkout@v4
+
+      - name: Установить .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Восстановить зависимости
+        run: dotnet restore ./Homeworks/EF/src/PromoCodeFactory.WebHost/PromoCodeFactory.WebHost.csproj
+
+      - name: Собрать проект
+        run: dotnet build ./Homeworks/EF/src/PromoCodeFactory.WebHost/PromoCodeFactory.WebHost.csproj -c Release --no-restore
+      
+      - name: Запустить unit-тесты
+        run: dotnet test ./Homeworks/UnitTests/src/PromoCodeFactory.UnitTests/PromoCodeFactory.UnitTests.csproj --no-build --verbosity normal
+      
+      - name: Применить миграции
+        run: |
+          dotnet tool install --global dotnet-ef
+          export PATH="$PATH:/home/runner/.dotnet/tools"
+          dotnet ef database update --project Homeworks/EF/src/PromoCodeFactory.WebHost --context ApplicationDbContext
+        env:
+          ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=HomeworkDockerDb;Username=postgres;Password=P@$$w0rd"
+
+      - name: Собрать Docker-образ
+        run: docker build -t promofactory-webhost -f ./Homeworks/EF/src/PromoCodeFactory.WebHost/Dockerfile .
+
+      - name: Запустить контейнеры через Docker Compose (опционально)
+        run: docker compose -f Homeworks/EF/src/compose.yml up -d
