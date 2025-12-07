@@ -43,7 +43,7 @@ jobs:
 
       - name: Применить миграции
         run: |
-          dotnet tool install --global dotnet-ef
+          dotnet tool install --global dotnet-ef --version 8.0.0
           export PATH="$PATH:/home/runner/.dotnet/tools"
           dotnet ef database update --project Homeworks/EF/src/PromoCodeFactory.WebHost --context ApplicationDbContext
         env:
