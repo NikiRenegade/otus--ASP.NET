@@ -1,10 +1,14 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
+using Pcf.GivingToCustomer.Core;
+using Pcf.GivingToCustomer.Core.Abstractions;
+using Pcf.GivingToCustomer.Core.Abstractions.Consumers;
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 using Pcf.GivingToCustomer.Core.Abstractions.Repositories;
 using Pcf.GivingToCustomer.Core.Abstractions.Gateways;
@@ -12,6 +16,9 @@ using Pcf.GivingToCustomer.DataAccess.Data;
 using Pcf.GivingToCustomer.DataAccess;
 using Pcf.GivingToCustomer.DataAccess.Repositories;
 using Pcf.GivingToCustomer.Integration;
+using Pcf.GivingToCustomer.Integration.Messaging;
+using RabbitMQ.Client;
+using SurveyManageService.Infrastructure.Messaging;
 
 namespace Pcf.GivingToCustomer.WebHost
 {
@@ -33,6 +40,7 @@ namespace Pcf.GivingToCustomer.WebHost
             services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
             services.AddScoped<INotificationGateway, NotificationGateway>();
             services.AddScoped<IDbInitializer, EfDbInitializer>();
+            services.AddScoped<IPromoCodeService, PromoCodeService>();
             services.AddDbContext<DataContext>(x =>
             {
                 //x.UseSqlite("Filename=PromocodeFactoryGivingToCustomerDb.sqlite");
@@ -48,6 +56,31 @@ namespace Pcf.GivingToCustomer.WebHost
                 options.Title = "PromoCode Factory Giving To Customer API Doc";
                 options.Version = "1.0";
             });
+            
+            // Подключение к RabbitMQ
+            var rabbitConfig = Configuration.GetSection("RabbitMQ");
+
+            services.AddSingleton(async sp =>
+            {
+                var factory = new ConnectionFactory
+                {
+                    HostName = rabbitConfig["HostName"],
+                    Port = int.Parse(rabbitConfig["Port"]!),
+                    UserName = rabbitConfig["UserName"],
+                    Password = rabbitConfig["Password"]
+                };
+                return await factory.CreateConnectionAsync();
+            });
+
+            services.AddSingleton(async sp =>
+            {
+                var connection = await sp.GetRequiredService<Task<IConnection>>();
+                var channel = await connection.CreateChannelAsync();
+                return channel;
+            });
+            services.AddSingleton<IEventConsumer, RabbitMqEventConsumer>();
+            services.AddScoped<IGivingPromoCodeToCustomerEventConsumer, RabbitMqGivingPromoCodeToCustomerEventConsumer>();
+            services.AddHostedService<PromoCodeEventsBackgroundService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
