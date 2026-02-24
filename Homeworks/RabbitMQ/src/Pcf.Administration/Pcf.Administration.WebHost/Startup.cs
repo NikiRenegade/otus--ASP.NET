@@ -9,7 +9,12 @@ using Pcf.Administration.DataAccess;
 using Pcf.Administration.DataAccess.Repositories;
 using Pcf.Administration.DataAccess.Data;
 using Pcf.Administration.Core.Abstractions.Repositories;
+using RabbitMQ.Client;
 using System;
+using System.Threading.Tasks;
+using Pcf.Administration.Core;
+using Pcf.Administration.Core.Abstractions.Consumers;
+using Pcf.Administration.Integration.Messaging;
 
 namespace Pcf.Administration.WebHost
 {
@@ -30,6 +35,7 @@ namespace Pcf.Administration.WebHost
                 x.SuppressAsyncSuffixInActionNames = false);
             services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
             services.AddScoped<IDbInitializer, EfDbInitializer>();
+            services.AddScoped<IPromoCodeService, PromoCodeService>();
             services.AddDbContext<DataContext>(x =>
             {
                 //x.UseSqlite("Filename=PromocodeFactoryAdministrationDb.sqlite");
@@ -45,6 +51,31 @@ namespace Pcf.Administration.WebHost
                 options.Title = "PromoCode Factory Administration API Doc";
                 options.Version = "1.0";
             });
+            
+            // Подключение к RabbitMQ
+            var rabbitConfig = Configuration.GetSection("RabbitMQ");
+
+            services.AddSingleton(async sp =>
+            {
+                var factory = new ConnectionFactory
+                {
+                    HostName = rabbitConfig["HostName"],
+                    Port = int.Parse(rabbitConfig["Port"]!),
+                    UserName = rabbitConfig["UserName"],
+                    Password = rabbitConfig["Password"]
+                };
+                return await factory.CreateConnectionAsync();
+            });
+
+            services.AddSingleton(async sp =>
+            {
+                var connection = await sp.GetRequiredService<Task<IConnection>>();
+                var channel = await connection.CreateChannelAsync();
+                return channel;
+            });
+            services.AddSingleton<IEventConsumer, RabbitMqEventConsumer>();
+            services.AddScoped<IAdministrationEventConsumer, RabbitMqAdministrationEventConsumer>();
+            services.AddHostedService<PromoCodeEventsBackgroundService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
