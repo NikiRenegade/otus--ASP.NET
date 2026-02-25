@@ -6,8 +6,7 @@ using Pcf.ReceivingFromPartner.Core.Domain;
 
 namespace Pcf.ReceivingFromPartner.Integration
 {
-    public class GivingPromoCodeToCustomerGateway
-        : IGivingPromoCodeToCustomerGateway
+    public class GivingPromoCodeToCustomerGateway : IGivingPromoCodeToCustomerGateway
     {
         private readonly HttpClient _httpClient;
 
